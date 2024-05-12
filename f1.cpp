@@ -11,11 +11,15 @@
           flights.
 */
 //------------------------------------------------------------------------------
+#pragma warning(disable: 4996)
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 #define MAX_FLIGHTS 10
 #define MAX_INPUT_BYTES 30
-
 
 #define UNIMPLEMENTED(n) return n //Remove before submission!
 
@@ -25,7 +29,7 @@ typedef struct {
     char* departureDate;
 } FlightInfo;
 
-void fillFlightInfo(FlightInfo*, char*, char*);
+int fillFlightInfo(FlightInfo*, char*, char*);
 void printFlightInfo(FlightInfo*);
 
 //------------------------------------------------------------------------------
@@ -48,6 +52,28 @@ int main(void) {
 
     // Call printFlightInfo(flights)
 
+    // Free memory allocated for each FlightInfo field.
+
+
+    // TEST/HALF-IMPL fillFlightInfo
+    printf("Please enter 10 pairs of flight destination-departure date pairs:\n");
+    for (int i = 0; i < MAX_FLIGHTS; i++) {
+        printf("Flight #%d:\n", i + 1);
+
+        char destinationInput[MAX_INPUT_BYTES] = { 0 };
+        printf("\tPlease enter a flight destination > ");
+        fgets(destinationInput, MAX_INPUT_BYTES, stdin);
+
+        char departureInput[MAX_INPUT_BYTES] = { 0 };
+        printf("\tPlease enter a departure date > ");
+        fgets(departureInput, MAX_INPUT_BYTES, stdin);
+
+
+
+        fillFlightInfo(&flights[i], destinationInput, departureInput);
+        printf("flights[%d]: dest = %s, dept = %s\n", i, flights[i].destination, flights[i].departureDate);
+    }
+
     return EXIT_SUCCESS;
 }
 
@@ -62,10 +88,27 @@ int main(void) {
         destination   : pointer to string representing the flight destination.
         departureDate : pointer to string representing the flight departure date.
     RETURNS     :
-        This function does not return anything (returning a status int may be good).
+        This function returns a status integer 1 indicating success, or
+        0 indicating failure.
 */
-void fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
-    UNIMPLEMENTED();
+int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
+
+    char* pDestination = (char*)malloc(strlen(destination) + 1); // +1 to account for '\0'
+    char* pDepartureDate = (char*)malloc(strlen(departureDate) + 1);
+
+    if (!pDestination || !pDepartureDate) {
+        return 0;
+    }
+
+    // Clean destination before copying plz
+    strcpy(pDestination, destination);
+    flight->destination = pDestination;
+
+    // Clean destination before copying plz
+    strcpy(pDepartureDate, departureDate);
+    flight->departureDate = pDepartureDate;
+
+    return 1;
 }
 
 
@@ -85,6 +128,7 @@ void fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) 
 void printFlightInfo(FlightInfo* flights) {
     UNIMPLEMENTED();
 }
+
 
 /*
     FUNCTION    : clearBuffer
