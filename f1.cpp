@@ -22,6 +22,7 @@
 #define MAX_FLIGHTS 10
 #define MAX_INPUT_BYTES 30
 #define NEWLINE '\n'
+#define FIELD_WIDTH 35
 
 #define UNIMPLEMENTED(n) return n //Remove before submission!
 
@@ -33,33 +34,13 @@ typedef struct {
 
 int fillFlightInfo(FlightInfo*, char*, char*);
 void printFlightInfo(FlightInfo*, int);
-void clearBuffer(char*, size_t); // May be un-needed.
-void cleanNewlines(char*, size_t);
+void cleanString(char*, size_t);
 
 //------------------------------------------------------------------------------
 int main(void) {
     FlightInfo flights[MAX_FLIGHTS] = { 0 };
 
-    // Prompt user for MAX_FLIGHTS pairs of strings;
-    /* LOOP until MAX_FLIGHTS:
-        
-        Get FlightInfo @ current index
-
-        Declare destinationBuffer
-        Get destination string from user into buffer.
-
-        Declare departureDateBuffer
-        Get departure date from user into buffer.
-
-        Call fillFlightInfo(gottenFlightInfo, destinationBuffer, departureDateBuffer)
-    */
-
-    // Call printFlightInfo(flights)
-
-    // Free memory allocated for each FlightInfo field.
-
-
-    // Get ten pairs of destination - departure date strings from the user:
+    // Get MAX_FLIGHTS pairs of destination - departure date strings from the user:
     printf("Please enter %d pairs of flight destination-departure date pairs:\n", MAX_FLIGHTS);
     for (int i = 0; i < MAX_FLIGHTS; i++) {
         printf("Flight #%d:\n", i + 1);
@@ -67,16 +48,18 @@ int main(void) {
         char destinationInput[MAX_INPUT_BYTES] = { 0 };
         printf("\tPlease enter a flight destination > ");
         fgets(destinationInput, MAX_INPUT_BYTES, stdin);
-        cleanNewlines(destinationInput, MAX_INPUT_BYTES);
+        cleanString(destinationInput, MAX_INPUT_BYTES);
 
         char departureInput[MAX_INPUT_BYTES] = { 0 };
         printf("\tPlease enter a departure date > ");
         fgets(departureInput, MAX_INPUT_BYTES, stdin);
-        cleanNewlines(destinationInput, MAX_INPUT_BYTES);
+        cleanString(destinationInput, MAX_INPUT_BYTES);
 
         fillFlightInfo(&flights[i], destinationInput, departureInput);
-        printf("flights[%d]: dest = %s, dept = %s\n", i, flights[i].destination, flights[i].departureDate);
     }
+
+    // Call printFlightInfo(flights)
+    printFlightInfo(flights, MAX_FLIGHTS);
 
     // Free allocated heap memory for each FlightInfo:
     for (int i = 0; i < MAX_FLIGHTS; i++) {
@@ -137,31 +120,22 @@ int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
         This function does not return anything.
 */
 void printFlightInfo(FlightInfo* flights, int flightCount) {
-    UNIMPLEMENTED();
+    for (int i = 0; i < flightCount; i++) {
+        printf(
+            "%-*s%-*s\n",
+            FIELD_WIDTH, flights[i].destination,
+            FIELD_WIDTH, flights[i].departureDate
+        );
+    }
 }
 
 
 /*
-    FUNCTION    : clearBuffer
-    DESCRIPTION :
-        Resets all the fields in a char array to '\0'.
-    PARAMETERS  :
-        buffer     : the char array to clear.
-        bufferSize : the size of buffer.
-    RETURNS     :
-        This function does not return anything.
-*/
-void clearBuffer(char* buffer, size_t bufferSize) {
-    // May be un-needed
-    UNIMPLEMENTED();
-}
-
-
-/*
-    FUNCTION    : cleanNewlines
+    FUNCTION    : cleanString
     DESCRIPTION :
         Sets all newlines found in a string to '\0', up to the
-        provided number of characters.
+        provided number of characters. Sets last char to '\0' as
+        well to ensure string is in appropriate C-style format.
     PARAMETERS  :
         str    : the string to covert newlines from
         strLen : the length of the string, or number of characters to
@@ -169,12 +143,13 @@ void clearBuffer(char* buffer, size_t bufferSize) {
     RETURNS     :
         This function does not return anything.
 */
-void cleanNewlines(char* str, size_t strLen) {
+void cleanString(char* str, size_t strLen) {
     for (int i = 0; i < strLen; i++) {
         if (str[i] == NEWLINE) {
             str[i] = NULL;
         }
     }
+    // Set last char to null to ensure it's null-terminated:
+    str[strLen - 1] = NULL;
     return;
 }
-
