@@ -7,6 +7,7 @@
           This program prompts the user for 10 pairs of strings; the first
           of a pair representing a destination for a flight, and the second
           representing the departure date of that flight.
+
           The program then outputs the formatted contents of all inputted
           flights.
 */
@@ -20,6 +21,7 @@
 #define EXIT_FAILURE 1
 #define MAX_FLIGHTS 10
 #define MAX_INPUT_BYTES 30
+#define NEWLINE '\n'
 
 #define UNIMPLEMENTED(n) return n //Remove before submission!
 
@@ -30,7 +32,9 @@ typedef struct {
 } FlightInfo;
 
 int fillFlightInfo(FlightInfo*, char*, char*);
-void printFlightInfo(FlightInfo*);
+void printFlightInfo(FlightInfo*, int);
+void clearBuffer(char*, size_t); // May be un-needed.
+void cleanNewlines(char*, size_t);
 
 //------------------------------------------------------------------------------
 int main(void) {
@@ -55,25 +59,34 @@ int main(void) {
     // Free memory allocated for each FlightInfo field.
 
 
-    // TEST/HALF-IMPL fillFlightInfo
-    printf("Please enter 10 pairs of flight destination-departure date pairs:\n");
+    // Get ten pairs of destination - departure date strings from the user:
+    printf("Please enter %d pairs of flight destination-departure date pairs:\n", MAX_FLIGHTS);
     for (int i = 0; i < MAX_FLIGHTS; i++) {
         printf("Flight #%d:\n", i + 1);
 
         char destinationInput[MAX_INPUT_BYTES] = { 0 };
         printf("\tPlease enter a flight destination > ");
         fgets(destinationInput, MAX_INPUT_BYTES, stdin);
+        cleanNewlines(destinationInput, MAX_INPUT_BYTES);
 
         char departureInput[MAX_INPUT_BYTES] = { 0 };
         printf("\tPlease enter a departure date > ");
         fgets(departureInput, MAX_INPUT_BYTES, stdin);
-
-
+        cleanNewlines(destinationInput, MAX_INPUT_BYTES);
 
         fillFlightInfo(&flights[i], destinationInput, departureInput);
         printf("flights[%d]: dest = %s, dept = %s\n", i, flights[i].destination, flights[i].departureDate);
     }
 
+    // Free allocated heap memory for each FlightInfo:
+    for (int i = 0; i < MAX_FLIGHTS; i++) {
+        if (flights[i].destination) {
+            free(flights[i].destination);
+        }
+        if (flights[i].departureDate) {
+            free(flights[i].departureDate);
+        }
+    }
     return EXIT_SUCCESS;
 }
 
@@ -100,11 +113,9 @@ int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
         return 0;
     }
 
-    // Clean destination before copying plz
     strcpy(pDestination, destination);
     flight->destination = pDestination;
 
-    // Clean destination before copying plz
     strcpy(pDepartureDate, departureDate);
     flight->departureDate = pDepartureDate;
 
@@ -125,7 +136,7 @@ int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
     RETURNS     :
         This function does not return anything.
 */
-void printFlightInfo(FlightInfo* flights) {
+void printFlightInfo(FlightInfo* flights, int flightCount) {
     UNIMPLEMENTED();
 }
 
@@ -141,5 +152,29 @@ void printFlightInfo(FlightInfo* flights) {
         This function does not return anything.
 */
 void clearBuffer(char* buffer, size_t bufferSize) {
+    // May be un-needed
     UNIMPLEMENTED();
 }
+
+
+/*
+    FUNCTION    : cleanNewlines
+    DESCRIPTION :
+        Sets all newlines found in a string to '\0', up to the
+        provided number of characters.
+    PARAMETERS  :
+        str    : the string to covert newlines from
+        strLen : the length of the string, or number of characters to
+            convert up to.
+    RETURNS     :
+        This function does not return anything.
+*/
+void cleanNewlines(char* str, size_t strLen) {
+    for (int i = 0; i < strLen; i++) {
+        if (str[i] == NEWLINE) {
+            str[i] = NULL;
+        }
+    }
+    return;
+}
+
