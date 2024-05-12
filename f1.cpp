@@ -1,30 +1,43 @@
 /*
-    FILE          : f1.cp
-    PROJECT       : Focused Assignment #1 - SENG1050
-    PROGRAMMER    : Tristin A. Manson - Student ID: 8988333
-    FIRST VERSION : May 12th, 2024
-    DESCRIPTION   :
+    FILE           : f1.cp
+    PROJECT        : Focused Assignment #1 - SENG1050
+    PROGRAMMER     : Tristin A. Manson - Student ID: 8988333
+    FIRST VERSION  : May 12th, 2024
+    REPOSITORY URL : https://github.com/Trianan/SENG1050_Focused1
+        -> NOTE: this is a private repository; I'll have to add you as a
+          collaborator or take screenshots if you want to see it.
+    DESCRIPTION    :
           This program prompts the user for 10 pairs of strings; the first
           of a pair representing a destination for a flight, and the second
-          representing the departure date of that flight.
-
-          The program then outputs the formatted contents of all inputted
-          flights.
+          representing the departure date of that flight. The program then
+          outputs the formatted contents of all inputted flights.
 */
+
 //------------------------------------------------------------------------------
 #pragma warning(disable: 4996)
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <stdlib.h> // malloc, free
+#include <stdio.h> // printf, fgets
+#include <string.h> // strlen, strcpy
 
+// Return codes for main
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
+
+// Return codes for fillFlightInfo:
+#define MALLOC_SUCCESS 1
+#define MALLOC_FAILURE 0
+
+// Return codes for getUserInput:
+#define READ_SUCCESS 1
+#define READ_FAILURE 0
+
+// Constraints:
 #define MAX_FLIGHTS 10
 #define MAX_INPUT_BYTES 30
-#define NEWLINE '\n'
-#define FIELD_WIDTH 35
+#define PRINT_FIELD_WIDTH 35
 
-#define UNIMPLEMENTED(n) return n //Remove before submission!
+// Constants:
+#define NEWLINE '\n'
 
 //------------------------------------------------------------------------------
 typedef struct {
@@ -35,6 +48,8 @@ typedef struct {
 int fillFlightInfo(FlightInfo*, char*, char*);
 void printFlightInfo(FlightInfo*, int);
 void cleanString(char*, size_t);
+int getUserInput(char*, size_t = MAX_INPUT_BYTES);
+
 
 //------------------------------------------------------------------------------
 int main(void) {
@@ -47,21 +62,29 @@ int main(void) {
 
         char destinationInput[MAX_INPUT_BYTES] = { 0 };
         printf("\tPlease enter a flight destination > ");
-        fgets(destinationInput, MAX_INPUT_BYTES, stdin);
-        cleanString(destinationInput, MAX_INPUT_BYTES);
+        if (!getUserInput(destinationInput)) {
+            printf("Could not get destination input!\n");
+            return EXIT_FAILURE;
+        }
 
         char departureInput[MAX_INPUT_BYTES] = { 0 };
         printf("\tPlease enter a departure date > ");
-        fgets(departureInput, MAX_INPUT_BYTES, stdin);
-        cleanString(destinationInput, MAX_INPUT_BYTES);
+        if (!getUserInput(departureInput)) {
+            printf("Could not get departure input!\n");
+            return EXIT_FAILURE;
+        }
 
-        fillFlightInfo(&flights[i], destinationInput, departureInput);
+        if (!fillFlightInfo(&flights[i], destinationInput, departureInput)) {
+            printf("Out of memory! Terminating...\n");
+            return EXIT_FAILURE;
+        }
     }
 
     // Call printFlightInfo(flights)
     printFlightInfo(flights, MAX_FLIGHTS);
 
-    // Free allocated heap memory for each FlightInfo:
+
+    // Free allocated memory for each field in each FlightInfo:
     for (int i = 0; i < MAX_FLIGHTS; i++) {
         if (flights[i].destination) {
             free(flights[i].destination);
@@ -70,10 +93,13 @@ int main(void) {
             free(flights[i].departureDate);
         }
     }
+
     return EXIT_SUCCESS;
 }
 
+
 //------------------------------------------------------------------------------
+
 /*
     FUNCTION    : fillFlightInfo
     DESCRIPTION :
@@ -84,8 +110,8 @@ int main(void) {
         destination   : pointer to string representing the flight destination.
         departureDate : pointer to string representing the flight departure date.
     RETURNS     :
-        This function returns a status integer 1 indicating success, or
-        0 indicating failure.
+        This function returns a status integer MALLOC_SUCCESS indicating success, or
+        MALLOC_FAILURE indicating failure.
 */
 int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
 
@@ -93,7 +119,7 @@ int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
     char* pDepartureDate = (char*)malloc(strlen(departureDate) + 1);
 
     if (!pDestination || !pDepartureDate) {
-        return 0;
+        return MALLOC_FAILURE;
     }
 
     strcpy(pDestination, destination);
@@ -102,7 +128,7 @@ int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
     strcpy(pDepartureDate, departureDate);
     flight->departureDate = pDepartureDate;
 
-    return 1;
+    return MALLOC_SUCCESS;
 }
 
 
@@ -123,9 +149,9 @@ void printFlightInfo(FlightInfo* flights, int flightCount) {
     for (int i = 0; i < flightCount; i++) {
         printf(
             "%-*s%-*s\n",
-            FIELD_WIDTH, flights[i].destination,
-            FIELD_WIDTH, flights[i].departureDate
-        );
+            PRINT_FIELD_WIDTH, flights[i].destination,
+            PRINT_FIELD_WIDTH, flights[i].departureDate
+            );
     }
 }
 
@@ -150,6 +176,27 @@ void cleanString(char* str, size_t strLen) {
         }
     }
     // Set last char to null to ensure it's null-terminated:
-    str[strLen - 1] = NULL;
-    return;
+    str[strLen - 1] = NULL; // might error for null strings!
+}
+
+
+/*
+    FUNCTION    : getUserInput
+    DESCRIPTION :
+        Reads a string of user input into a buffer, then sanitizes it; it
+        ensures the user input does not contain newlines and is null-terminated,
+        making it a valid C-style string.
+    PARAMETERS  :
+        buffer: the char arraay to read user input into.
+        buffer: the size of buffer.
+    RETURNS     :
+        Returns READ_SUCCESS on successfully obtaining user input; otherwise
+        returns READ_FAILURE.
+*/
+int getUserInput(char* buffer, size_t bufferSize) {
+    if (!fgets(buffer, bufferSize, stdin)) {
+        return READ_FAILURE;
+    }
+    cleanString(buffer, bufferSize);
+    return READ_SUCCESS;
 }
