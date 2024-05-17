@@ -4,13 +4,11 @@
     PROGRAMMER     : Tristin A. Manson - Student ID: 8988333
     FIRST VERSION  : May 12th, 2024
     REPOSITORY URL : https://github.com/Trianan/SENG1050_Focused1
-        -> NOTE: this is a private repository; I'll have to add you as a
-          collaborator or take screenshots if you want to see it.
     DESCRIPTION    :
           This program prompts the user for 10 pairs of strings; the first
           of a pair representing a destination for a flight, and the second
           representing the departure date of that flight. The program then
-          outputs the formatted contents of all inputted flights.
+          outputs the formatted contents of all inputted flights to STDOUT.
 */
 
 //------------------------------------------------------------------------------
@@ -34,10 +32,12 @@
 // Constraints:
 #define MAX_FLIGHTS 10
 #define MAX_INPUT_BYTES 30
-#define PRINT_FIELD_WIDTH 35
 
 // Constants:
+#define PRINT_FIELD_WIDTH 35
 #define NEWLINE '\n'
+#define INDENT "  "
+
 
 //------------------------------------------------------------------------------
 typedef struct {
@@ -56,33 +56,33 @@ int main(void) {
     FlightInfo flights[MAX_FLIGHTS] = { 0 };
 
     // Get MAX_FLIGHTS pairs of destination - departure date strings from the user:
-    printf("Please enter %d pairs of flight destination-departure date pairs:\n", MAX_FLIGHTS);
+    printf("Please enter %d pairs of flight destination-departure date pairs:%c", MAX_FLIGHTS, NEWLINE);
     for (int i = 0; i < MAX_FLIGHTS; i++) {
-        printf("Flight #%d:\n", i + 1);
+        printf("Flight #%d:%c", i + 1, NEWLINE);
 
         char destinationInput[MAX_INPUT_BYTES] = { 0 };
-        printf("\tPlease enter a flight destination > ");
+        printf("%sPlease enter a flight destination > ", INDENT);
         if (!getUserInput(destinationInput)) {
-            printf("Could not get destination input!\n");
+            printf("Could not get destination input!%c", NEWLINE);
             return EXIT_FAILURE;
         }
 
         char departureInput[MAX_INPUT_BYTES] = { 0 };
-        printf("\tPlease enter a departure date > ");
+        printf("%sPlease enter a departure date > ", INDENT);
         if (!getUserInput(departureInput)) {
-            printf("Could not get departure input!\n");
+            printf("Could not get departure input!%c", NEWLINE);
             return EXIT_FAILURE;
         }
 
         if (!fillFlightInfo(&flights[i], destinationInput, departureInput)) {
-            printf("Out of memory! Terminating...\n");
+            printf("Out of memory! Terminating...%c", NEWLINE);
             return EXIT_FAILURE;
         }
     }
 
-    // Call printFlightInfo(flights)
+    printf("%c", NEWLINE); // Visually separates user input and final output.
+    // Print out formatted data for each flight:
     printFlightInfo(flights, MAX_FLIGHTS);
-
 
     // Free allocated memory for each field in each FlightInfo:
     for (int i = 0; i < MAX_FLIGHTS; i++) {
@@ -141,16 +141,18 @@ int fillFlightInfo(FlightInfo* flight, char* destination, char* departureDate) {
         departure date will be printed within the next 32 characters, both
         left-aligned.
     PARAMETERS  :
-        flights : an array of FlightInfo structs to display.
+        flights     : an array of FlightInfo structs to display.
+        flightCount : the number of elements in the flights array.
     RETURNS     :
         This function does not return anything.
 */
 void printFlightInfo(FlightInfo* flights, int flightCount) {
     for (int i = 0; i < flightCount; i++) {
         printf(
-            "%-*s%-*s\n",
+            "%-*s%-*s%c",
             PRINT_FIELD_WIDTH, flights[i].destination,
-            PRINT_FIELD_WIDTH, flights[i].departureDate
+            PRINT_FIELD_WIDTH, flights[i].departureDate,
+            NEWLINE
             );
     }
 }
@@ -176,7 +178,9 @@ void cleanString(char* str, size_t strLen) {
         }
     }
     // Set last char to null to ensure it's null-terminated:
-    str[strLen - 1] = NULL; // might error for null strings!
+    if (strLen > 0) {
+        str[strLen - 1] = NULL;
+    }
 }
 
 
@@ -187,8 +191,8 @@ void cleanString(char* str, size_t strLen) {
         ensures the user input does not contain newlines and is null-terminated,
         making it a valid C-style string.
     PARAMETERS  :
-        buffer: the char arraay to read user input into.
-        buffer: the size of buffer.
+        buffer     : the char arraay to read user input into.
+        bufferSize : the size of buffer.
     RETURNS     :
         Returns READ_SUCCESS on successfully obtaining user input; otherwise
         returns READ_FAILURE.
